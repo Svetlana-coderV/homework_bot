@@ -1,23 +1,21 @@
 import logging
 import os
 import time
+
 from lib2to3.pgen2.tokenize import TokenError
-from urllib import response
 from urllib.error import URLError
 
 import requests
 import telegram
 from dotenv import load_dotenv
-from telegram import Bot
-from telegram.ext import Updater
 
 load_dotenv()
 
 logging.basicConfig(
-    level = logging.DEBUG,
-    filename = 'program.log',
-    filemode = 'w',
-    format = '%(asctime)s, %(levelname)s, %(message)s'
+    level=logging.DEBUG,
+    filename='program.log',
+    filemode='w',
+    format='%(asctime)s, %(levelname)s, %(message)s'
 )
 
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
@@ -62,6 +60,7 @@ def get_api_answer(current_timestamp):
         logging.error(f'Эндпоинт {ENDPOINT} недоступен')
         raise URLError('API возвращает статус-код != 200')
 
+
 def check_response(response):
     """Функция проверки ответа API."""
     if type(response) is dict:
@@ -82,6 +81,7 @@ def check_response(response):
         logging.error('Формат ответа API - не словарь')
         raise TypeError('Формат ответа API - не словарь')
 
+
 def parse_status(homework):
     """Функция парсинга статуса конкретной homework из списка homeworks."""
     homework_name = homework.get('homework_name')
@@ -91,6 +91,7 @@ def parse_status(homework):
         raise KeyError('Неизвестный статус домашки в ответе API')
     verdict = HOMEWORK_STATUSES.get(homework_status)
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
+
 
 def check_tokens():
     """Функция проверки переменных окружения."""
@@ -127,3 +128,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
