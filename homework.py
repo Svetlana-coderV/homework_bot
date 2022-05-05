@@ -42,13 +42,12 @@ def send_message(bot, message):
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logging.info(f'Удачная отправка сообщения {message}')
     except Exception as error:
-        logging.error(f'Сбой при отправке сообщения {message}')
+        logging.error(f'Сбой при отправке сообщения: {error}')
 
 
 def get_api_answer(current_timestamp):
-    """
-    Функция делает запрос к эндпоинту
-    и возвращает ответ в формате данных Python.
+    """Функция делает запрос к эндпоинту.
+    И возвращает ответ в формате данных Python.
     """
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
@@ -126,6 +125,6 @@ def main():
         finally:
             time.sleep(RETRY_TIME)
 
+
 if __name__ == '__main__':
     main()
-
