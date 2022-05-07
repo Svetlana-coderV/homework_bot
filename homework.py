@@ -99,12 +99,6 @@ def parse_status(homework):
 def check_tokens():
     """Функция проверки переменных окружения."""
     return all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
-    
-    # for env in env_list:
-    #     if globals()[env] is None:
-    #         logging.critical('Не найдены переменные окружения')
-    #         return False
-    #     return True
 
 
 def main():
