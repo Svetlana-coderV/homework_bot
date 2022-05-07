@@ -11,13 +11,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    filename='program.log',
-    filemode='w',
-    format='%(asctime)s, %(levelname)s, %(message)s'
-)
-
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
@@ -27,7 +20,7 @@ ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
 
-HOMEWORK_STATUSES = {
+VERDICTS = {
     'approved': 'Работа проверена: ревьюеру всё понравилось. Ура!',
     'reviewing': 'Работа взята на проверку ревьюером.',
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
@@ -51,21 +44,32 @@ def get_api_answer(current_timestamp):
     """
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
-    response = requests.get(ENDPOINT, headers=HEADERS, params=params)
-    if response.status_code == 200:
-        response = response.json()
-        return response
-    else:
+    try:
+        response = requests.get(ENDPOINT, headers=HEADERS, params=params)
+    except Exception:
         logging.error(f'Эндпоинт {ENDPOINT} недоступен')
-        raise URLError('API возвращает статус-код != 200')
+        raise URLError(f'Эндпоинт {ENDPOINT} недоступен')
+    else:
+        if response.status_code == 200:
+            response = response.json()
+            return response
+        else:
+            logging.error(f'Эндпоинт {ENDPOINT} недоступен')
+            raise URLError('API возвращает статус-код != 200')
+        # if response.status_code == 200:
+    #     response = response.json()
+    #     return response
+    # else:
+    #     logging.error(f'Эндпоинт {ENDPOINT} недоступен')
+    #     raise URLError('API возвращает статус-код != 200')
 
 
 def check_response(response):
     """Функция проверки ответа API."""
-    if type(response) is dict:
+    if isinstance(response, dict):
         if 'homeworks' in response:
             homeworks = response.get('homeworks')
-            if type(homeworks) is list:
+            if isinstance(homeworks, list):
                 return homeworks
             else:
                 logging.error(
@@ -85,21 +89,22 @@ def parse_status(homework):
     """Функция парсинга статуса конкретной homework из списка homeworks."""
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
-    if homework_status not in HOMEWORK_STATUSES.keys():
+    if homework_status not in VERDICTS.keys():
         logging.error('Неизвестный статус домашки в ответе API')
         raise KeyError('Неизвестный статус домашки в ответе API')
-    verdict = HOMEWORK_STATUSES.get(homework_status)
+    verdict = VERDICTS.get(homework_status)
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
 def check_tokens():
     """Функция проверки переменных окружения."""
-    env_list = ['PRACTICUM_TOKEN', 'TELEGRAM_TOKEN', 'TELEGRAM_CHAT_ID']
-    for env in env_list:
-        if globals()[env] is None:
-            logging.critical('Не найдены переменные окружения')
-            return False
-        return True
+    return all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
+    
+    # for env in env_list:
+    #     if globals()[env] is None:
+    #         logging.critical('Не найдены переменные окружения')
+    #         return False
+    #     return True
 
 
 def main():
@@ -127,4 +132,10 @@ def main():
 
 
 if __name__ == '__main__':
+    logging.basicConfig(
+    level=logging.DEBUG,
+    filename='program.log',
+    filemode='w',
+    format='%(asctime)s, %(levelname)s, %(message)s'
+)
     main()
